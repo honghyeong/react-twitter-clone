@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { dbService } from "../fBase";
+import Nweet from "../components/Nweet";
 import {
   getDocs,
   addDoc,
@@ -80,9 +81,11 @@ const Home = ({ userObj }) => {
       <div>
         {tweeted.map((tweet) => {
           return (
-            <div key={tweet.id}>
-              <h4>{tweet.text}</h4>
-            </div>
+            <Nweet
+              key={tweet.id}
+              tweetObj={tweet}
+              isOwner={userObj.uid === tweet.creatorId}
+            />
           );
         })}
       </div>
