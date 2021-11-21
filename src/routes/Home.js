@@ -1,23 +1,46 @@
 import React, { useEffect, useState } from "react";
 import { dbService } from "../fBase";
-import { getDocs, addDoc, collection } from "firebase/firestore";
-const Home = () => {
+import {
+  getDocs,
+  addDoc,
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  doc,
+} from "firebase/firestore";
+const Home = ({ userObj }) => {
   const [tweet, setTweet] = useState("");
   const [tweeted, setTweeted] = useState([]);
 
-  const getTweeted = async () => {
-    const dbTweeted = await getDocs(collection(dbService, "tweets"));
-    dbTweeted.forEach((doc) => {
-      const tweetObject = {
-        ...doc.data(),
-        id: doc.id,
-      };
-      setTweeted((prev) => [tweetObject, ...prev]);
-    }); // setState에 function을 넣으면 전의 데이터를 전달받을 수 있다.
-  };
+  // const getTweeted = async () => {
+  //   const dbTweeted = await getDocs(collection(dbService, "tweets"));
+  //   dbTweeted.forEach((doc) => {
+  //     const tweetObject = {
+  //       ...doc.data(),
+  //       id: doc.id,
+  //     };
+  //     setTweeted((prev) => [tweetObject, ...prev]);
+  //   }); // setState에 function을 넣으면 전의 데이터를 전달받을 수 있다.
+  // };
 
+  // 실시간 tweet list 반영
   useEffect(() => {
-    getTweeted();
+    // getTweeted();
+    const q = query(
+      collection(dbService, "tweets"),
+      orderBy("createdAt", "desc")
+    );
+    onSnapshot(q, (snapshot) => {
+      const tweetArray = snapshot.docs.map((doc) => {
+        return {
+          id: doc.id,
+          ...doc.data(),
+        };
+      });
+      setTweeted(tweetArray);
+      console.log(tweetArray);
+    });
   }, []);
 
   const onSubmit = async (event) => {
@@ -25,8 +48,9 @@ const Home = () => {
 
     try {
       const docRef = await addDoc(collection(dbService, "tweets"), {
-        tweet,
-        createAt: Date.now(),
+        text: tweet,
+        createdAt: Date.now(),
+        creatorId: userObj.uid,
       });
       console.log("Document Written", docRef);
     } catch (e) {
@@ -57,7 +81,7 @@ const Home = () => {
         {tweeted.map((tweet) => {
           return (
             <div key={tweet.id}>
-              <h4>{tweet.tweet}</h4>
+              <h4>{tweet.text}</h4>
             </div>
           );
         })}

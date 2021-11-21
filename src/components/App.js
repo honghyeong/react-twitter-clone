@@ -6,9 +6,11 @@ function App() {
   const auth = getAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isInit, setisInit] = useState(false);
+  const [userObj, setUserObj] = useState(null);
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        setUserObj(user);
         setIsLoggedIn(true);
       } else {
         setIsLoggedIn(false);
@@ -18,7 +20,11 @@ function App() {
   }, []);
   return (
     <>
-      {isInit ? <AppRouter isLoggedIn={isLoggedIn} /> : "Initializing"}
+      {isInit ? (
+        <AppRouter isLoggedIn={isLoggedIn} userObj={userObj} />
+      ) : (
+        "Initializing"
+      )}
       <footer>&copy; {new Date().getFullYear()}</footer>
     </>
   );
